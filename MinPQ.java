@@ -69,6 +69,12 @@ public class MinPQ{
     }
   }
 
+  /* private int countLeaves(Node p){
+    if (p == null) return 0;
+    else if((p.leftChild == null) && (p.rightChild == null)) return 1;
+    return countLeaves(p.leftChild) + countLeaves(p.rightChild);
+  } */
+
   public void show(){
     String str = "Pre Order Traversal";
     String dashes = "_";
@@ -161,11 +167,10 @@ public class MinPQ{
   public static void main(String[] args) {
     MinPQ heap = new MinPQ();
 
-    for (int n = 1; n < 20; n++) {
+    for (int n = 1; n < 16; n++) {
       heap.insert(n);
     }
 
-    System.out.println(heap.size());
     heap.show();
 
     // Test Cases
