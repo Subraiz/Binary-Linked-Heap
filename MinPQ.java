@@ -1,18 +1,17 @@
+import java.util.Scanner;
 public class MinPQ{
 
   private class Node {
     private Node parent;
-    private Node leftChild;
-    private Node rightChild;
+    private Node left;
+    private Node right;
     private int info;
-    private int id;
 
-    Node(int info, int id) {
+    Node(int info) {
         this.info = info;
         this.parent = null;
-        this.rightChild = null;
-        this.leftChild = null;
-        this.id = id;
+        this.right = null;
+        this.left = null;
     }
   }
 
@@ -20,6 +19,7 @@ public class MinPQ{
   private Node last; // Keeps track of the most current Node added.
   int N = 0;
   private int counter;
+  private int MSB;
 
 
   public MinPQ(){ // Constructor function.
@@ -30,50 +30,58 @@ public class MinPQ{
     return N == 0;
   }
 
+//-------------------------------Insertion Function O(log(n)) runtime---------------//
   public void insert(int info){
-    Node temp = new Node(info, N+1);
+    Node temp = new Node(info);
     if (this.isEmpty()) { // First item is always the root.
       this.root = temp;
     }
     else{
-      balance(temp, root); // This function makes sure the tree is balanced.
+      MSB = 0;
+      String binary = Integer.toBinaryString(N+1);
+      insert(root, temp, binary); // This function makes sure the tree is balanced.
     }
     N++;
   }
 
-  public void balance(Node key, Node target){ // Assign each Node an id corresponding to where it should be in an array.
+  public void insert(Node x, Node temp, String binary){
+    char index = binary.charAt(0);
+    int bit = Character.getNumericValue(index);
 
-    if (key.id == 2*target.id || (key.id == (2*target.id + 1))){
-      if (key.id == 2*target.id){
-        target.leftChild = key;
-        key.parent = target;
-        last = key;
+    if (x.left == null || x.right == null){
+      if (x.left == null){
+        x.left = temp;
+        temp.parent = x;
+        last = temp;
       }
 
-      else {
-        target.rightChild = key;
-        key.parent = target;
-        last = key;
-      }
-
-      if (key.info < target.info) {
-        swim(key);
-        return;
+      else if (x.right == null){
+        x.right = temp;
+        temp.parent = x;
+        last = temp;
       }
     }
 
-    else if (target.leftChild == null || target.rightChild == null) return; // Recursively go through the linked list until the right Node is found.
-    else {
-      balance(key, target.leftChild);
-      balance(key, target.rightChild);
+    else if (bit == 0 && MSB == 0){
+      insert(x, temp, binary.substring(1));
     }
+
+    else if (bit == 1 && MSB == 0){
+      MSB = MSB + 1;
+      insert(x, temp, binary.substring(1));
+    }
+
+    else if (bit == 0 && MSB != 0){
+      insert(x.left, temp, binary.substring(1));
+    }
+
+    else if (bit == 1 && MSB != 0){
+      insert(x.right, temp, binary.substring(1));
+    }
+
   }
+//--------------------------------------------------------------------------------//
 
-  /* private int countLeaves(Node p){
-    if (p == null) return 0;
-    else if((p.leftChild == null) && (p.rightChild == null)) return 1;
-    return countLeaves(p.leftChild) + countLeaves(p.rightChild);
-  } */
 
   public void show(){
     String str = "Pre Order Traversal";
@@ -99,8 +107,8 @@ public class MinPQ{
 
   public void delMin(){
     root.info = last.info; // Switches the last node with the first node.
-    if (last.parent.rightChild.info == last.info) {last.parent.rightChild = null;} // Need to delete the last node. The only way to do is to make the pointer of the parent point to null.
-    else if (last.parent.leftChild.info == last.info) {last.parent.leftChild = null;}
+    if (last.parent.right.info == last.info) {last.parent.right = null;} // Need to delete the last node. The only way to do is to make the pointer of the parent point to null.
+    else if (last.parent.left.info == last.info) {last.parent.left = null;}
     sink(root);
   }
 
@@ -116,12 +124,12 @@ public class MinPQ{
     if (toShow == null) return;
     else{
       if (toShow.parent != null){
-        if (toShow.info % 2 == 0){System.out.println(toShow.info + ": Left Child of " + toShow.parent.info);}
+        if (toShow.info == toShow.parent.left.info){System.out.println(toShow.info + ": Left Child of " + toShow.parent.info);}
         else {System.out.println(toShow.info + ": Right Child of " + toShow.parent.info);}
       }
       else {System.out.println(root.info + ": Root");}
-      show(toShow.leftChild);
-      show(toShow.rightChild);
+      show(toShow.left);
+      show(toShow.right);
     }
   }
 
@@ -135,19 +143,19 @@ public class MinPQ{
   }
 
   public void sink(Node x){
-    if (x.leftChild == null && x.rightChild == null) return;
-    else if(x.info < x.leftChild.info && x.info < x.rightChild.info) return;
+    if (x.left == null && x.right == null) return;
+    else if(x.info < x.left.info && x.info < x.right.info) return;
     else {
-      if (x.leftChild.info < x.rightChild.info){
-        swap(x, x.leftChild);
-        sink(x.leftChild);
+      if (x.left.info < x.right.info){
+        swap(x, x.left);
+        sink(x.left);
       }
-      else if (x.leftChild.info > x.rightChild.info){
-        swap(x, x.rightChild);
-        sink(x.rightChild);
+      else if (x.left.info > x.right.info){
+        swap(x, x.right);
+        sink(x.right);
       }
-      else if (x.rightChild == null && x.info > x.leftChild.info){
-        swap(x, x.leftChild);
+      else if (x.right == null && x.info > x.left.info){
+        swap(x, x.left);
         return;
       }
     }
@@ -167,10 +175,12 @@ public class MinPQ{
   public static void main(String[] args) {
     MinPQ heap = new MinPQ();
 
-    for (int n = 1; n < 16; n++) {
+    for (int n = 1; n < 8; n++) {
       heap.insert(n);
     }
 
+    heap.show();
+    heap.delMin();
     heap.show();
 
     // Test Cases
