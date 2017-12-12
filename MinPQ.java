@@ -105,11 +105,12 @@ public class MinPQ{
     return root.info;
   }
 
-  public void delMin(){
+  public int delete(){
     root.info = last.info; // Switches the last node with the first node.
     if (last.parent.right.info == last.info) {last.parent.right = null;} // Need to delete the last node. The only way to do is to make the pointer of the parent point to null.
     else if (last.parent.left.info == last.info) {last.parent.left = null;}
     sink(root);
+    return root.info;
   }
 
   public int size(){
@@ -179,8 +180,10 @@ public class MinPQ{
       heap.insert(n);
     }
 
+    System.out.println(heap.isEmpty());
+
     heap.show();
-    heap.delMin();
+    System.out.println(heap.delete());
     heap.show();
 
     // Test Cases
